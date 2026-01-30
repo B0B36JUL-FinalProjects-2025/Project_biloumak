@@ -1,6 +1,27 @@
 using LinearAlgebra
 using GeometryBasics
 
+abstract type TrajectoryType end
+struct SpiralTrajectory <: TrajectoryType end
+struct FigureEightTrajectory <: TrajectoryType end
+
+function generate_trajectory(::SpiralTrajectory; turns=3, height=20.0, radius=8.0, points=500)
+    t = range(0, turns * 2pi, length=points)
+    return [Point3f(radius * cos(ti), radius * sin(ti), height * ti / (turns * 2pi)) for ti in t]
+end
+
+function generate_trajectory(::FigureEightTrajectory; size=10.0, height=5.0, points=400)
+    t = range(0, 2pi, length=points)
+    return [Point3f(size * sin(ti), size * sin(2ti) / 2, height + 2 * sin(3ti)) for ti in t]
+end
+
+function get_available_trajectories()
+    return Dict(
+        "Spiral" => SpiralTrajectory(),
+        "Figure-8" => FigureEightTrajectory()
+    )
+end
+
 function get_direction_vector(traj, idx)
     if idx >= length(traj)
         idx = length(traj) - 1
