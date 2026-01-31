@@ -3,6 +3,65 @@ using GLMakie
 using GeometryBasics
 using Colors
 
+function draw_antenna_stick!(ax, antenna::Antenna; color=:gray70)
+    pos = antenna.position
+    h = antenna.height
+    r = antenna.stick_radius
+    n_segments = 20
+    n_height = 2
+    θ = range(0, 2pi, length=n_segments)
+    z_vals = range(0, h, length=n_height)
+    x = [pos[1] + r * cos(t) for t in θ, _ in z_vals]
+    y = [pos[2] + r * sin(t) for t in θ, _ in z_vals]
+    z = [pos[3] + zv for _ in θ, zv in z_vals]
+    surface!(ax, x, y, z, color=fill(color, size(x)), shading=FastShading, 
+        transparency=false)
+    meshscatter!(ax, [Point3f(pos[1], pos[2], pos[3] + h)], 
+        markersize=r*2, color=:red)
+end
+
+function draw_radiation_pattern!(
+    ax, antenna::Antenna; 
+    color=RGBAf(0.2, 0.6, 1.0, 0.3),
+    u_segments=50, v_segments=25
+    )
+    pos = antenna.position
+    r = antenna.donut_radius
+    R = r
+    center_z = pos[3] + antenna.height
+    
+    u = range(0, 2pi, length=u_segments)
+    v = range(0, 2pi, length=v_segments)
+    
+    x = [(pos[1] + (R + r * cos(vv)) * cos(uu)) for uu in u, vv in v]
+    y = [(pos[2] + (R + r * cos(vv)) * sin(uu)) for uu in u, vv in v]
+    z = [(center_z + r * sin(vv)) for uu in u, vv in v]
+    
+    surface!(ax, x, y, z, color=fill(color, size(x)), shading=FastShading,
+        transparency=true)
+end
+
+function draw_antenna!(
+    ax, antenna::Antenna; 
+    stick_color=:gray60,
+    pattern_color=RGBAf(0.2, 0.6, 1.0, 0.25)
+    )
+    draw_antenna_stick!(ax, antenna, color=stick_color)
+    draw_radiation_pattern!(ax, antenna, color=pattern_color)
+end
+
+function draw_antennas!(ax, antennas::Vector{Antenna})
+    colors = [
+        RGBAf(0.2, 0.6, 1.0, 0.25),#blue
+        RGBAf(1.0, 0.4, 0.2, 0.25),#orange  
+        RGBAf(0.2, 1.0, 0.4, 0.25),#green
+    ]
+    for (i, antenna) in enumerate(antennas)
+        pattern_color = colors[mod1(i, length(colors))]
+        draw_antenna!(ax, antenna, pattern_color=pattern_color)
+    end
+end
+
 function setup_ui(fig, speed, traj, frame_idx, drone_pos)
     controls = GridLayout(fig[1, 1], tellwidth=true)
     Label(controls[1,1], "Drone Simulation", fontsize=22, color=:white)
@@ -81,6 +140,9 @@ function main()
     
     fig = Figure(size=(1600, 900), backgroundcolor=:gray10)
     ax = LScene(fig[1, 2], show_axis=true)
+    
+    antennas = get_default_antennas()
+    draw_antennas!(ax, antennas)
     
     drone_pos = @lift $traj[clamp($frame_idx, 1, length($traj))]
     

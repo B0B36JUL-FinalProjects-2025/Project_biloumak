@@ -45,3 +45,26 @@ function get_up_vector(direction)
     up = normalize(cross(right, Vec3f(direction...)))
     return Point3f(up...)
 end
+
+struct Antenna
+    position::Point3f
+    height::Float32
+    stick_radius::Float32
+    donut_radius::Float32
+end
+
+function Antenna(position::Point3f; 
+        height=15.0f0, 
+        stick_radius=0.15f0,
+        donut_radius=4.0f0)
+    return Antenna(position, Float32(height), Float32(stick_radius), 
+        Float32(donut_radius))
+end
+
+function get_default_antennas()
+    return [
+        Antenna(Point3f(-15.0, -15.0, 0.0), height=12.0f0, donut_radius=4.0f0),
+        Antenna(Point3f(15.0, 10.0, 0.0), height=18.0f0, donut_radius=6.0f0),
+        Antenna(Point3f(0.0, -20.0, 0.0), height=10.0f0, donut_radius=3.5f0),
+    ]
+end
