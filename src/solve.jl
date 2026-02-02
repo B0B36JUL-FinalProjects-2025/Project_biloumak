@@ -177,7 +177,7 @@ function generate_smooth_path(waypoints::Vector{Point3f}; points_per_segment::In
     return trajectory
 end
 
-function solve_path_optimization(antennas::Vector{Antenna})
+function solve_path_optimization(antennas::Vector{Antenna}; start_position::Point3f=Point3f(0, 0, 20))
     isempty(antennas) && return [Point3f(0, 0, 5)]
     n = length(antennas)
     
@@ -189,7 +189,6 @@ function solve_path_optimization(antennas::Vector{Antenna})
     end
     
     contact_points = Point3f[]
-    start_position = Point3f(0, 0, 20)
     push!(contact_points, start_position)
     
     for i in 1:n

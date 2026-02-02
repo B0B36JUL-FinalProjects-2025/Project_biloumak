@@ -92,7 +92,7 @@ function setup_ui(fig, speed, traj, frame_idx, drone_pos)
         speed_sl=speed_sl, pos_sl=pos_sl, traj_menu=traj_menu)
 end
 
-function manage_ui(ui, speed, is_playing, frame_idx, traj, antennas)
+function manage_ui(ui, speed, is_playing, frame_idx, traj, antennas, start_position)
     on(ui.speed_sl.value) do v
         speed[] = v
     end
@@ -119,7 +119,7 @@ function manage_ui(ui, speed, is_playing, frame_idx, traj, antennas)
     on(ui.traj_menu.selection) do sel
         is_playing[] = false
         if sel == "Optimized"
-            new_traj = solve_path_optimization(antennas)
+            new_traj = solve_path_optimization(antennas, start_position=start_position)
         else
             trajectories = get_available_trajectories()
             new_traj = generate_trajectory(trajectories[sel])
@@ -130,7 +130,7 @@ function manage_ui(ui, speed, is_playing, frame_idx, traj, antennas)
     end
 end
 
-function main()
+function main(; antennas::Vector{Antenna}=get_default_antennas(), start_position::Point3f=Point3f(0, 0, 20))
     GLMakie.activate!(inline=false)
     # set_theme!(theme_dark())
     
@@ -142,10 +142,9 @@ function main()
     fig = Figure(size=(1600, 900), backgroundcolor=:gray10)
     ax = LScene(fig[1, 2], show_axis=true)
     
-    antennas = get_default_antennas()
     draw_antennas!(ax, antennas)
 
-    optimized_traj = solve_path_optimization(antennas)
+    optimized_traj = solve_path_optimization(antennas, start_position=start_position)
     traj = Observable(optimized_traj)
     
     drone_pos = @lift $traj[clamp($frame_idx, 1, length($traj))]
@@ -171,7 +170,7 @@ function main()
         color=:yellow, tipradius=0.15, tiplength=0.3)
     
     ui = setup_ui(fig, speed, traj, frame_idx, drone_pos)
-    manage_ui(ui, speed, is_playing, frame_idx, traj, antennas)
+    manage_ui(ui, speed, is_playing, frame_idx, traj, antennas, start_position)
     
     screen = display(fig)
     is_playing[] = true
