@@ -64,3 +64,91 @@ function find_optimal_contact_point(antenna::Antenna, from_point::Point3f, to_po
     end
     return best_point
 end
+
+function build_distance_matrix(antennas::Vector{Antenna})
+    n = length(antennas)
+    dist_matrix = zeros(Float64, n, n)
+    for i in 1:n, j in 1:n
+        if i != j
+            p1 = find_closest_point_on_torus(antennas[i], get_torus_center(antennas[j]))
+            p2 = find_closest_point_on_torus(antennas[j], Point3f(p1))
+            dist_matrix[i, j] = norm(Point3f(p1) - Point3f(p2))
+        end
+    end
+    return dist_matrix
+end
+
+function solve_tsp_bruteforce(dist_matrix::Matrix{Float64})
+    n = size(dist_matrix, 1)
+    best_order, best_dist = collect(1:n), Inf
+    
+    for perm in permutations(1:n)
+        d = sum(dist_matrix[perm[i], perm[i+1]] for i in 1:(n-1))
+        if d < best_dist
+            best_dist = d
+            best_order = collect(perm)
+        end
+    end
+    return best_order
+end
+
+function solve_tsp_greedy(dist_matrix::Matrix{Float64}, start_idx::Int=1)
+    n = size(dist_matrix, 1)
+    visited = falses(n)
+    order = Int[start_idx]
+    visited[start_idx] = true
+    
+    current = start_idx
+    while length(order) < n
+        best_next, best_dist = -1, Inf
+        for j in 1:n
+            if !visited[j] && dist_matrix[current, j] < best_dist
+                best_dist = dist_matrix[current, j]
+                best_next = j
+            end
+        end
+        push!(order, best_next)
+        visited[best_next] = true
+        current = best_next
+    end
+    return order
+end
+
+function improve_tsp_2opt!(order::Vector{Int}, dist_matrix::Matrix{Float64})
+    n = length(order)
+    improved = true
+    while improved
+        improved = false
+        for i in 1:(n-2), j in (i+2):n
+            d1 = dist_matrix[order[i], order[i+1]]
+            d2 = j < n ? dist_matrix[order[j], order[j+1]] : 0.0
+            new_d1 = dist_matrix[order[i], order[j]]
+            new_d2 = j < n ? dist_matrix[order[i+1], order[j+1]] : 0.0
+            
+            if d1 + d2 > new_d1 + new_d2 + 1e-6
+                order[i+1:j] = reverse(order[i+1:j])
+                improved = true
+            end
+        end
+    end
+    return order
+end
+
+function solve_tsp(dist_matrix::Matrix{Float64})
+    n = size(dist_matrix, 1)
+    if n <= 8
+        return solve_tsp_bruteforce(dist_matrix)
+    else
+        best_order, best_dist = nothing, Inf
+        for start in 1:n
+            order = solve_tsp_greedy(dist_matrix, start)
+            improve_tsp_2opt!(order, dist_matrix)
+            d = sum(dist_matrix[order[i], order[i+1]] for i in 1:(n-1))
+            if d < best_dist
+                best_dist = d
+                best_order = order
+            end
+        end
+        return best_order
+    end
+end
