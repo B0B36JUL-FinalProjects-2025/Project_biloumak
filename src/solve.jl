@@ -153,6 +153,30 @@ function solve_tsp(dist_matrix::Matrix{Float64})
     end
 end
 
+function generate_smooth_path(waypoints::Vector{Point3f}; points_per_segment::Int=50)
+    length(waypoints) < 2 && return waypoints
+    trajectory = Point3f[]
+    
+    for i in 1:(length(waypoints)-1)
+        p0 = i > 1 ? waypoints[i-1] : waypoints[i]
+        p1 = waypoints[i]
+        p2 = waypoints[i+1]
+        p3 = i < length(waypoints)-1 ? waypoints[i+2] : waypoints[i+1]
+        
+        for j in 0:(points_per_segment-1)
+            t = j / points_per_segment
+            t2, t3 = t^2, t^3
+            
+            pos = 0.5f0 * ((2*p1) + (-p0 + p2)*t + 
+                  (2*p0 - 5*p1 + 4*p2 - p3)*t2 + 
+                  (-p0 + 3*p1 - 3*p2 + p3)*t3)
+            push!(trajectory, pos)
+        end
+    end
+    push!(trajectory, waypoints[end])
+    return trajectory
+end
+
 function solve_path_optimization(antennas::Vector{Antenna})
     isempty(antennas) && return [Point3f(0, 0, 5)]
     n = length(antennas)
