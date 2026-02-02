@@ -94,7 +94,7 @@ function setup_ui(fig, speed, traj, frame_idx, drone_pos)
         speed_sl=speed_sl, pos_sl=pos_sl, traj_menu=traj_menu)
 end
 
-function manage_ui(ui, speed, is_playing, frame_idx, traj)
+function manage_ui(ui, speed, is_playing, frame_idx, traj, antennas)
     on(ui.speed_sl.value) do v
         speed[] = v
     end
@@ -173,7 +173,7 @@ function main()
         color=:yellow, tipradius=0.15, tiplength=0.3)
     
     ui = setup_ui(fig, speed, traj, frame_idx, drone_pos)
-    manage_ui(ui, speed, is_playing, frame_idx, traj)
+    manage_ui(ui, speed, is_playing, frame_idx, traj, antennas)
     
     screen = display(fig)
     is_playing[] = true
