@@ -63,7 +63,7 @@ end
 
 function setup_ui(fig, speed, traj, frame_idx, drone_pos)
     controls = GridLayout(fig[1, 1], tellwidth=true)
-    Label(controls[1,1], "Drone Simulation", fontsize=22, color=:white)
+    Label(controls[1,1], "TSP simulation", fontsize=22, color=:white)
     Label(controls[2,1], "-- Playback --", fontsize=14, color=:gray60)
     btn_grid = GridLayout(controls[3,1])
     play_btn = Button(btn_grid[1,1], label="Play", buttoncolor=RGBf(0.2, 0.7, 0.3), labelcolor=:white, width=80)
