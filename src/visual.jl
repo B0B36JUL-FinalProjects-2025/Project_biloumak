@@ -15,7 +15,7 @@ function draw_antenna_stick!(ax, antenna::Antenna; color=:gray70)
     x = [pos[1] + r * cos(t) for t in θ, _ in z_vals]
     y = [pos[2] + r * sin(t) for t in θ, _ in z_vals]
     z = [pos[3] + zv for _ in θ, zv in z_vals]
-    surface!(ax, x, y, z, color=fill(color, size(x)), shading=FastShading, 
+    surface!(ax, x, y, z, color=fill(color, size(x)), shading=true, 
         transparency=false)
     meshscatter!(ax, [Point3f(pos[1], pos[2], pos[3] + h)], 
         markersize=r*2, color=:red)
@@ -38,7 +38,7 @@ function draw_radiation_pattern!(
     y = [(pos[2] + (R + r * cos(vv)) * sin(uu)) for uu in u, vv in v]
     z = [(center_z + r * sin(vv)) for uu in u, vv in v]
     
-    surface!(ax, x, y, z, color=fill(color, size(x)), shading=FastShading,
+    surface!(ax, x, y, z, color=fill(color, size(x)), shading=true,
         transparency=true)
 end
 
