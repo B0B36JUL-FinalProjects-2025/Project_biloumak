@@ -1,5 +1,3 @@
-include("vis_utils.jl")
-include("solve.jl")
 using GLMakie
 using GeometryBasics
 using Colors
@@ -195,4 +193,4 @@ function main()
     return fig
 end
 
-main()
+# main()
