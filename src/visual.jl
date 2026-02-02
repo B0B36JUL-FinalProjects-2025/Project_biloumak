@@ -1,4 +1,5 @@
 include("vis_utils.jl")
+include("solve.jl")
 using GLMakie
 using GeometryBasics
 using Colors
@@ -79,8 +80,8 @@ function setup_ui(fig, speed, traj, frame_idx, drone_pos)
     pos_lbl = @lift string($frame_idx, " / ", length($traj))
     Label(controls[9,1], pos_lbl, fontsize=12, color=:cyan)
     Label(controls[10,1], "-- Trajectory --", fontsize=14, color=:gray60)
-    traj_menu = Menu(controls[11,1], options=["Spiral","Figure-8"], 
-        default="Spiral", width=250)
+    traj_menu = Menu(controls[11,1], options=["Optimized", "Spiral", "Figure-8"], 
+        default="Optimized", width=250)
     Label(controls[12,1], "-- Status --", fontsize=14, color=:gray60)
     status_lbl = @lift begin
         p = $drone_pos
@@ -119,13 +120,15 @@ function manage_ui(ui, speed, is_playing, frame_idx, traj)
     end
     on(ui.traj_menu.selection) do sel
         is_playing[] = false
-        trajectories = get_available_trajectories()
-        if haskey(trajectories, sel)
+        if sel == "Optimized"
+            new_traj = solve_path_optimization(antennas)
+        else
+            trajectories = get_available_trajectories()
             new_traj = generate_trajectory(trajectories[sel])
-            traj[] = new_traj
-            frame_idx[] = 1
-            ui.pos_sl.range = 1:length(new_traj)
         end
+        traj[] = new_traj
+        frame_idx[] = 1
+        ui.pos_sl.range = 1:length(new_traj)
     end
 end
 
@@ -143,6 +146,9 @@ function main()
     
     antennas = get_default_antennas()
     draw_antennas!(ax, antennas)
+
+    optimized_traj = solve_path_optimization(antennas)
+    traj = Observable(optimized_traj)
     
     drone_pos = @lift $traj[clamp($frame_idx, 1, length($traj))]
     

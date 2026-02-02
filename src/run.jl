@@ -4,7 +4,9 @@ Pkg.activate(@__DIR__)
 try
     using GLMakie
     using GeometryBasics
-    using Colors
+    using Color
+    using Optim
+    using Combinatorics
 catch
     Pkg.instantiate()
 end

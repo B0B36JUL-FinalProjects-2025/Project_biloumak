@@ -152,3 +152,28 @@ function solve_tsp(dist_matrix::Matrix{Float64})
         return best_order
     end
 end
+
+function solve_path_optimization(antennas::Vector{Antenna})
+    isempty(antennas) && return [Point3f(0, 0, 5)]
+    n = length(antennas)
+    
+    if n == 1
+        order = [1]
+    else
+        dist_matrix = build_distance_matrix(antennas)
+        order = solve_tsp(dist_matrix)
+    end
+    
+    contact_points = Point3f[]
+    start_position = Point3f(0, 0, 20)
+    push!(contact_points, start_position)
+    
+    for i in 1:n
+        ant = antennas[order[i]]
+        to_p = i < n ? get_torus_center(antennas[order[i+1]]) : start_position
+        push!(contact_points, find_optimal_contact_point(ant, contact_points[end], to_p))
+    end    
+    push!(contact_points, start_position)
+    
+    return generate_smooth_path(contact_points)
+end
