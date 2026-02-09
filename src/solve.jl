@@ -29,7 +29,7 @@ function find_closest_point_on_torus(antenna::Antenna, point::Point3f)
     for _ in 1:100
         p = get_torus_point(antenna, u, v)
         dist = norm(Point3f(p) - point)
-        
+        if dist < 1e-6 break end
         p_du = get_torus_point(antenna, u + eps_step, v)
         p_dv = get_torus_point(antenna, u, v + eps_step)
         

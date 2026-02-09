@@ -130,51 +130,48 @@ function manage_ui(ui, speed, is_playing, frame_idx, traj, antennas, start_posit
     end
 end
 
-function main(; antennas::Vector{Antenna}=get_default_antennas(), start_position::Point3f=Point3f(0, 0, 20))
+function visualize(antennas::Vector{Antenna}, trajectory::Vector{Point3f}; start_position::Point3f=Point3f(0, 0, 20))
     GLMakie.activate!(inline=false)
-    # set_theme!(theme_dark())
-    
+
     frame_idx = Observable(1)
     speed = Observable(1.0)
     is_playing = Observable(false)
-    traj = Observable(generate_trajectory(SpiralTrajectory()))
-    
+
     fig = Figure(size=(1600, 900), backgroundcolor=:gray10)
     ax = LScene(fig[1, 2], show_axis=true)
-    
+
     draw_antennas!(ax, antennas)
 
-    optimized_traj = solve_path_optimization(antennas, start_position=start_position)
-    traj = Observable(optimized_traj)
-    
+    traj = Observable(trajectory)
+
     drone_pos = @lift $traj[clamp($frame_idx, 1, length($traj))]
-    
+
     trail_pts = @lift begin
         idx = clamp($frame_idx, 1, length($traj))
         start = max(1, idx - 30)
         $traj[start:idx]
     end
-    
+
     lines!(ax, traj, color=:cyan, linewidth=2)
     meshscatter!(ax, @lift([$traj[1]]), markersize=0.5, color=:lime)
     meshscatter!(ax, @lift([$traj[end]]), markersize=0.5, color=:red)
-    
+
     lines!(ax, trail_pts, color=:orange, linewidth=3)
     meshscatter!(ax, @lift([$drone_pos]), markersize=0.5, color=:orangered)
-    
+
     arrow_dir = @lift begin
         idx = clamp($frame_idx, 1, length($traj))
         Vec3f(get_direction_vector($traj, idx)...) * 1.2
     end
-    arrows3d!(ax, @lift([$drone_pos]), @lift([$arrow_dir]), 
+    arrows3d!(ax, @lift([$drone_pos]), @lift([$arrow_dir]),
         color=:yellow, tipradius=0.15, tiplength=0.3)
-    
+
     ui = setup_ui(fig, speed, traj, frame_idx, drone_pos)
     manage_ui(ui, speed, is_playing, frame_idx, traj, antennas, start_position)
-    
+
     screen = display(fig)
     is_playing[] = true
-    
+
     if !isinteractive()
         while isopen(screen)
             if is_playing[]
@@ -188,8 +185,6 @@ function main(; antennas::Vector{Antenna}=get_default_antennas(), start_position
             sleep(0.02)
         end
     end
-    
+
     return fig
 end
-
-# main()

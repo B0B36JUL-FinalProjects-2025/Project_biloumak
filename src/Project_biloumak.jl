@@ -9,9 +9,11 @@ using Colors
 include("vis_utils.jl")
 include("solve.jl")
 include("visual.jl")
+include("run.jl")
 
 export Antenna, Point3f
 export solve_path_optimization
-export main
+export visualize
+export run_solver
 
 end
