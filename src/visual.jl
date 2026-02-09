@@ -172,18 +172,20 @@ function visualize(antennas::Vector{Antenna}, trajectory::Vector{Point3f}; start
     screen = display(fig)
     is_playing[] = true
 
-    if !isinteractive()
-        while isopen(screen)
-            if is_playing[]
-                new_idx = frame_idx[] + max(1, round(Int, speed[]))
-                if new_idx > length(traj[])
-                    frame_idx[] = 1
-                else
-                    frame_idx[] = new_idx
-                end
+    animation_loop = @async while isopen(screen)
+        if is_playing[]
+            new_idx = frame_idx[] + max(1, round(Int, speed[]))
+            if new_idx > length(traj[])
+                frame_idx[] = 1
+            else
+                frame_idx[] = new_idx
             end
-            sleep(0.02)
         end
+        sleep(0.02)
+    end
+
+    if !isinteractive()
+        wait(animation_loop)
     end
 
     return fig
