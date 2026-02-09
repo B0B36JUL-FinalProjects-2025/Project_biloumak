@@ -1,3 +1,8 @@
+import Pkg
+Pkg.activate(@__DIR__)
+Pkg.develop(path=joinpath(@__DIR__, ".."))
+Pkg.instantiate()
+
 using Project_biloumak
 using GeometryBasics
 using Random
@@ -22,4 +27,4 @@ end
 
 start_pos = Point3f(0, 0, 40)
 
-Project_biloumak.main(antennas=antennas, start_position=start_pos)
+Project_biloumak.run_solver(antennas=antennas, start_position=start_pos)
