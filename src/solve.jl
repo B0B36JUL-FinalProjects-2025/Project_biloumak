@@ -134,6 +134,13 @@ function improve_tsp_2opt!(order::Vector{Int}, dist_matrix::Matrix{Float64})
     return order
 end
 
+"""
+    solve_tsp(dist_matrix::Matrix{Float64}) -> Vector{Int}
+
+Solve the Travelling Salesman Problem for the given distance matrix.
+Uses brute-force for n < 9, otherwise applies greedy nearest-neighbour
++ 2-opt local search from every starting node and returns the best tour.
+"""
 function solve_tsp(dist_matrix::Matrix{Float64})
     n = size(dist_matrix, 1)
     if n <= 8
@@ -153,6 +160,13 @@ function solve_tsp(dist_matrix::Matrix{Float64})
     end
 end
 
+"""
+    generate_smooth_path(waypoints; points_per_segment=50) -> Vector{Point3f}
+
+Interpolate a sequence of `waypoints` into a smooth trajectory using
+Catmull-Rom spline interpolation with `points_per_segment` samples between
+each pair of consecutive waypoints.
+"""
 function generate_smooth_path(waypoints::Vector{Point3f}; points_per_segment::Int=50)
     length(waypoints) < 2 && return waypoints
     trajectory = Point3f[]
@@ -177,6 +191,18 @@ function generate_smooth_path(waypoints::Vector{Point3f}; points_per_segment::In
     return trajectory
 end
 
+"""
+    solve_path_optimization(antennas; start_position=Point3f(0,0,20)) -> Vector{Point3f}
+
+Computes an optimised drone flight path that visits every
+antenna's radiation torus, starting and ending at `start_position`.
+Steps:
+1. Build a pairwise distance matrix between antenna torus surfaces.
+2. Solve the TSP to determine the optimal visiting order.
+3. Select the best contact point on each torus.
+4. Smooth the resulting waypoints with Catmull-Rom splines.
+Returns the full smooth trajectory as a `Vector{Point3f}`.
+"""
 function solve_path_optimization(antennas::Vector{Antenna}; start_position::Point3f=Point3f(0, 0, 20))
     isempty(antennas) && return [Point3f(0, 0, 5)]
     n = length(antennas)

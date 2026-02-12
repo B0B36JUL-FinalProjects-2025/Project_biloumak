@@ -46,6 +46,15 @@ function get_up_vector(direction)
     return Point3f(up...)
 end
 
+"""
+Represents an antenna with a toroidal radiation pattern.
+# Variables
+- `position::Point3f`: base position on the ground (x, y, z).
+- `height::Float32`: height of the antenna stick.
+- `stick_radius::Float32`: visual radius of the antenna stick.
+- `donut_radius::Float32`: radius of the toroidal radiation pattern.
+- `transfer_time::Float32`: data transfer time at this antenna (reserved for future use).
+"""
 struct Antenna
     position::Point3f
     height::Float32

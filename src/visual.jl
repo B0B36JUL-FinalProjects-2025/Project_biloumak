@@ -130,6 +130,17 @@ function manage_ui(ui, speed, is_playing, frame_idx, traj, antennas, start_posit
     end
 end
 
+"""
+    visualize(antennas, trajectory; start_position=Point3f(0,0,20)) -> Figure
+
+Create and display the full interactive 3D visualisation of the drone simulation.
+Renders antennas, the trajectory path, a moving drone with a direction arrow,
+and an animated trail. Returns the `GLMakie.Figure`.
+# Arguments
+- `antennas::Vector{Antenna}`: antennas to draw.
+- `trajectory::Vector{Point3f}`: the pre-computed flight path.
+- `start_position`: drone start/end position marker.
+"""
 function visualize(antennas::Vector{Antenna}, trajectory::Vector{Point3f}; start_position::Point3f=Point3f(0, 0, 20))
     GLMakie.activate!(inline=false)
 
